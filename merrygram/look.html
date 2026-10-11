@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A MerryGram Look for you</title>
+<meta name="description" content="A friend shared a MerryGram Look with you. Open it in the free MerryGram app.">
+<meta property="og:title" content="A MerryGram Look for you 🎃">
+<meta property="og:description" content="Tap to open this Look in MerryGram, the free holiday photo, sticker and card app.">
+<meta property="og:type" content="website">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 0%, #3b1670 0%, #0b021a 70%);
+    color: #fff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { width: 100%; max-width: 420px; padding: 28px 20px 40px; text-align: center; }
+  .emoji { font-size: 72px; line-height: 1; margin-bottom: 8px; }
+  h1 { font-size: 24px; margin: 8px 0 6px; }
+  p { color: #d9c8f5; line-height: 1.5; margin: 6px 0; }
+  .name { color: #ff9a1f; font-weight: 800; }
+  a.btn, button.btn {
+    display: block; width: 100%; margin: 14px 0 0; padding: 15px 16px; border-radius: 14px;
+    font-size: 17px; font-weight: 700; text-decoration: none; border: 0; cursor: pointer;
+  }
+  .primary { background: linear-gradient(135deg, #ff9a1f, #d94e00); color: #fff; }
+  .secondary { background: #230e40; color: #fff; border: 1px solid #5b2fa0; }
+  .ghost { background: transparent; color: #d9c8f5; border: 1px solid #5b2fa0; font-weight: 600; }
+  .small { font-size: 13px; color: #b9a3df; margin-top: 22px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="emoji" id="emoji">🎃</div>
+  <h1 id="title">A MerryGram Look for you</h1>
+  <p id="subtitle">A friend shared a Look with you.</p>
+
+  <div id="actions" class="hidden">
+    <a class="btn primary" id="openApp" href="#">Open in MerryGram</a>
+    <a class="btn secondary" id="getApp" href="#">Get MerryGram free on Google Play</a>
+    <button class="btn ghost" id="copyLink" type="button">Copy the link</button>
+    <p class="small">
+      Just installed the app? Come back to this page and tap
+      <b>Open in MerryGram</b>. Or open MerryGram, tap <b>Instant Looks</b>,
+      tap the link icon and paste.
+    </p>
+  </div>
+
+  <div id="missing" class="hidden">
+    <p>This link is missing its Look. Ask your friend to send it again.</p>
+    <a class="btn secondary" id="getApp2" href="#">Get MerryGram free on Google Play</a>
+  </div>
+</main>
+
+<script>
+(function () {
+  var PKG = 'com.merrygram.holiday_photos_stickers_cards';
+  var PLAY = 'https://play.google.com/store/apps/details?id=' + PKG +
+             '&referrer=' + encodeURIComponent('utm_source=look_share');
+  var params = new URLSearchParams(location.search);
+  var data = params.get('data') || '';
+
+  document.getElementById('getApp').href = PLAY;
+  document.getElementById('getApp2').href = PLAY;
+
+  if (!data) {
+    document.getElementById('missing').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('actions').classList.remove('hidden');
+
+  var isAndroid = /android/i.test(navigator.userAgent);
+  var appUrl = 'merrygram://look?data=' + encodeURIComponent(data);
+  // Chrome on Android: open the app, or go to Google Play if it is missing.
+  var intentUrl = 'intent://look?data=' + encodeURIComponent(data) +
+    '#Intent;scheme=merrygram;package=' + PKG +
+    ';S.browser_fallback_url=' + encodeURIComponent(PLAY) + ';end';
+  document.getElementById('openApp').href = isAndroid ? intentUrl : appUrl;
+
+  document.getElementById('copyLink').addEventListener('click', function () {
+    var btn = this;
+    function done() { btn.textContent = 'Link copied ✓'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(location.href).then(done, function () {});
+    } else {
+      var t = document.createElement('textarea');
+      t.value = location.href; document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      document.body.removeChild(t);
+    }
+  });
+
+  // Show the Look's name and emoji (nice to have: needs a modern browser).
+  // Everything is put on the page as plain text, never as HTML.
+  (async function () {
+    try {
+      var b64 = data.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var bin = atob(b64);
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      var look = JSON.parse(await new Response(stream).text());
+      var name = String(look.n || '').slice(0, 24);
+      var emoji = String(look.e || '').slice(0, 12);
+      if (emoji) document.getElementById('emoji').textContent = emoji;
+      if (name) {
+        document.getElementById('title').textContent = 'A friend sent you a Look';
+        var sub = document.getElementById('subtitle');
+        sub.textContent = '';
+        sub.appendChild(document.createTextNode('Try the '));
+        var span = document.createElement('span');
+        span.className = 'name';
+        span.textContent = name;
+        sub.appendChild(span);
+        sub.appendChild(document.createTextNode(' Look on your own photos.'));
+      }
+    } catch (e) { /* keep the generic text */ }
+  })();
+})();
+</script>
+</body>
+</html>
