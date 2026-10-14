@@ -4,9 +4,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.stylebunny.shop_fashion_and_lifestyle",
-      "sha256_cert_fingerprints":
-        "86:6D:F6:4F:44:55:76:69:7F:E0:F2:73:B9:57:BE:EF:5B:3F:6D:74:9B:21:EE:4B:61:D5:60:EF:45:F2:C8:47"
-		"A5:D7:59:BD:06:40:0E:D0:ED:6E:2F:8A:F7:39:51:C9:50:EB:FF:49:FB:27:27:36:10:15:0D:FC:8D:90:F1:57"
+      "sha256_cert_fingerprints": [
+        "86:6D:F6:4F:44:55:76:69:7F:E0:F2:73:B9:57:BE:EF:5B:3F:6D:74:9B:21:EE:4B:61:D5:60:EF:45:F2:C8:47",
+        "A5:D7:59:BD:06:40:0E:D0:ED:6E:2F:8A:F7:39:51:C9:50:EB:FF:49:FB:27:27:36:10:15:0D:FC:8D:90:F1:57"
+      ]
     }
   },
   {
@@ -14,9 +15,10 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.merrygram.holiday_photos_stickers_cards",
-      "sha256_cert_fingerprints": 
-		"78:6C:1B:E1:3F:C5:AC:74:FC:1F:06:B0:D1:CC:81:D5:81:C1:F0:C0:D5:2B:75:D3:54:69:61:EE:31:96:00:DA"
-		"A5:D7:59:BD:06:40:0E:D0:ED:6E:2F:8A:F7:39:51:C9:50:EB:FF:49:FB:27:27:36:10:15:0D:FC:8D:90:F1:57"
+      "sha256_cert_fingerprints": [
+        "78:6C:1B:E1:3F:C5:AC:74:FC:1F:06:B0:D1:CC:81:D5:81:C1:F0:C0:D5:2B:75:D3:54:69:61:EE:31:96:00:DA",
+        "A5:D7:59:BD:06:40:0E:D0:ED:6E:2F:8A:F7:39:51:C9:50:EB:FF:49:FB:27:27:36:10:15:0D:FC:8D:90:F1:57"
+      ]
     }
   }
 ]
