@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A MerryGram Look for you</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b021a">
 <meta name="description" content="A friend shared a MerryGram Look with you. Open it in the free MerryGram app.">
 <meta property="og:title" content="A MerryGram Look for you 🎃">
 <meta property="og:description" content="Tap to open this Look in MerryGram, the free holiday photo, sticker and card app.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://roddhc.github.io/merrygram/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -42,17 +46,22 @@
     <a class="btn primary" id="openApp" href="#">Open in MerryGram</a>
     <a class="btn secondary" id="getApp" href="#">Get MerryGram free on Google Play</a>
     <button class="btn ghost" id="copyLink" type="button">Copy the link</button>
-    <p class="small">
+    <p class="small" id="installHint">
       Just installed the app? Come back to this page and tap
       <b>Open in MerryGram</b>. Or open MerryGram, tap <b>Instant Looks</b>,
       tap the link icon and paste.
     </p>
   </div>
 
+  <div id="notAndroid" class="hidden">
+    <p>MerryGram is an Android app for now. Open this link on an Android phone to try the Look.</p>
+  </div>
+
   <div id="missing" class="hidden">
     <p>This link is missing its Look. Ask your friend to send it again.</p>
     <a class="btn secondary" id="getApp2" href="#">Get MerryGram free on Google Play</a>
   </div>
+  <p class="small"><a href="https://roddhc.github.io/merrygram/privacy.html" style="color:#b9a3df">Privacy Policy</a></p>
 </main>
 
 <script>
@@ -73,6 +82,13 @@
   document.getElementById('actions').classList.remove('hidden');
 
   var isAndroid = /android/i.test(navigator.userAgent);
+  if (!isAndroid) {
+    // The app only exists on Android, so don't offer buttons that cannot work.
+    document.getElementById('openApp').classList.add('hidden');
+    document.getElementById('getApp').classList.add('hidden');
+    document.getElementById('installHint').classList.add('hidden');
+    document.getElementById('notAndroid').classList.remove('hidden');
+  }
   var appUrl = 'merrygram://look?data=' + encodeURIComponent(data);
   // Chrome on Android: open the app, or go to Google Play if it is missing.
   var intentUrl = 'intent://look?data=' + encodeURIComponent(data) +
@@ -102,8 +118,22 @@
       var bin = atob(b64);
       var bytes = new Uint8Array(bin.length);
       for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      if (bytes.length > 20000) return; // far bigger than any real Look
       var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-      var look = JSON.parse(await new Response(stream).text());
+      // Read the unzipped data in pieces and stop at 40,000 bytes, so a
+      // malicious link cannot make the page unzip something enormous.
+      var reader = stream.getReader();
+      var chunks = [], total = 0;
+      while (true) {
+        var part = await reader.read();
+        if (part.done) break;
+        total += part.value.length;
+        if (total > 40000) { reader.cancel(); return; }
+        chunks.push(part.value);
+      }
+      var all = new Uint8Array(total), off = 0;
+      chunks.forEach(function (c) { all.set(c, off); off += c.length; });
+      var look = JSON.parse(new TextDecoder().decode(all));
       var name = String(look.n || '').slice(0, 24);
       var emoji = String(look.e || '').slice(0, 12);
       if (emoji) document.getElementById('emoji').textContent = emoji;
